@@ -51,3 +51,8 @@
 - Membuat berita festival makan di event.
 
 ## **5. Alur pengintegrasian dengan web service untuk terhubung dengan aplikasi web yang sudah dibuat saat Proyek Tengah Semester**
+1. Melengkapi endpoint pada web untuk setiap modul agar dapat mengambil dan mengirim data.
+2. Menambahkan middleware di Django yang memungkinkan akses API dari luar situs web.
+3. Membuat fungsi asinkron yang mengelola proses pengambilan, pengiriman, dan modifikasi data.
+4. Menggunakan HTTP GET untuk mengambil data dari endpoint yang tersedia di situs web, yang nantinya akan ditampilkan pada widget yang digunakan.
+5. Menggunakan HTTP POST untuk mengirim data ke endpoint yang akan menyimpan data dalam basis data Django.
