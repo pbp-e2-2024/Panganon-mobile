@@ -1,5 +1,9 @@
 import 'dart:convert';
+import 'dart:typed_data'; // Import for Uint8List
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:panganon_mobile/screens/login.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +19,22 @@ class _RegisterPageState extends State<RegisterPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  XFile? _image; // Use XFile for better compatibility
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    try {
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        setState(() {
+          _image = pickedFile;
+        });
+      }
+    } catch (e) {
+      _showSnackbar(context, 'Failed to pick image.', false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +48,14 @@ class _RegisterPageState extends State<RegisterPage> {
             Navigator.pop(context);
           },
         ),
+        backgroundColor: Colors.black,
       ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Card(
             elevation: 8,
+            color: Colors.grey[900],
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
@@ -47,101 +69,146 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: TextStyle(
                       fontSize: 24.0,
                       fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 30.0),
-                  TextFormField(
+                  _buildTextField(
                     controller: _usernameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Username',
-                      hintText: 'Enter your username',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                    ),
+                    label: 'Username',
+                    hint: 'Enter your username',
                   ),
                   const SizedBox(height: 12.0),
-                  TextFormField(
+                  _buildTextField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      hintText: 'Enter your password',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                    ),
+                    label: 'Password',
+                    hint: 'Enter your password',
                     obscureText: true,
                   ),
                   const SizedBox(height: 12.0),
-                  TextFormField(
+                  _buildTextField(
                     controller: _confirmPasswordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Confirm Password',
-                      hintText: 'Confirm your password',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12.0)),
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                    ),
+                    label: 'Confirm Password',
+                    hint: 'Confirm your password',
                     obscureText: true,
                   ),
                   const SizedBox(height: 24.0),
+                  _image != null
+                      ? (kIsWeb
+                          ? FutureBuilder<Uint8List>(
+                              future: _image!.readAsBytes(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.done &&
+                                    snapshot.hasData) {
+                                  return Image.memory(
+                                    snapshot.data!,
+                                    height: 100,
+                                    width: 100,
+                                  );
+                                } else if (snapshot.hasError) {
+                                  return const Text(
+                                    "Error loading image",
+                                    style: TextStyle(color: Colors.white),
+                                  );
+                                } else {
+                                  return const CircularProgressIndicator();
+                                }
+                              },
+                            )
+                          : Image.file(
+                              File(_image!.path),
+                              height: 100,
+                              width: 100,
+                            ))
+                      : TextButton.icon(
+                          onPressed: _pickImage,
+                          icon: const Icon(Icons.image, color: Colors.white),
+                          label: const Text(
+                            "Upload Image",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                  const SizedBox(height: 24.0),
                   ElevatedButton(
                     onPressed: () async {
-                      String username = _usernameController.text;
+                      String username = _usernameController.text.trim();
                       String password1 = _passwordController.text;
                       String password2 = _confirmPasswordController.text;
 
-                      if (password1 != password2) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Passwords do not match!'),
-                          ),
-                        );
+                      if (username.isEmpty ||
+                          password1.isEmpty ||
+                          password2.isEmpty) {
+                        _showSnackbar(
+                            context, 'Please fill all the fields!', false);
                         return;
                       }
 
-                      // Kirim data registrasi ke Django
+                      if (password1 != password2) {
+                        _showSnackbar(
+                            context, 'Passwords do not match!', false);
+                        return;
+                      }
+
+                      String? imageBase64;
+                      if (_image != null) {
+                        try {
+                          final bytes = await _image!.readAsBytes();
+                          String mimeType = _image!.mimeType ?? 'image/jpeg'; // Default MIME type
+                          
+                          // Validate MIME type
+                          if (!mimeType.startsWith('image/')) {
+                            _showSnackbar(
+                                context, 'Selected file is not an image!', false);
+                            return;
+                          }
+
+                          imageBase64 =
+                              "data:$mimeType;base64,${base64Encode(bytes)}";
+                        } catch (e) {
+                          _showSnackbar(
+                              context, 'Failed to read image bytes.', false);
+                          return;
+                        }
+                      }
+                    
                       final response = await request.postJson(
-                        "http://127.0.0.1:8000/auth/register_flutter/", // Ganti URL dengan URL endpoint Django
+                        "http://127.0.0.1:8000/auth/register_flutter/",
                         jsonEncode({
                           "username": username,
                           "password1": password1,
                           "password2": password2,
+                          "image": imageBase64,
                         }),
                       );
 
                       if (context.mounted) {
                         if (response['status'] == true) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(response['message'] ?? 'Successfully registered!'),
-                            ),
-                          );
+                          _showSnackbar(
+                              context,
+                              response['message'] ??
+                                  'Successfully registered!',
+                              true);
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const LoginPage()),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(response['message'] ?? 'Failed to register!'),
+                              builder: (context) => const LoginPage(),
                             ),
                           );
+                        } else {
+                          _showSnackbar(
+                              context,
+                              response['message'] ??
+                                  'Failed to register!',
+                              false);
                         }
                       }
                     },
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 50),
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      padding:
+                          const EdgeInsets.symmetric(vertical: 16.0),
                     ),
                     child: const Text('Register'),
                   ),
@@ -150,6 +217,45 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    bool obscureText = false,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        labelStyle: const TextStyle(color: Colors.white),
+        hintStyle: const TextStyle(color: Colors.white54),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white),
+        ),
+      ),
+      style: const TextStyle(color: Colors.white),
+      obscureText: obscureText,
+    );
+  }
+
+  void _showSnackbar(BuildContext context, String message, bool success) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: success ? Colors.green : Colors.red,
       ),
     );
   }
