@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         return request;
       },
       child: MaterialApp(
-        title: 'PANGANON',
+        title: 'Panganon',
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSwatch(

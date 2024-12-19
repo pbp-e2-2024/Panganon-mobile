@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:panganon_mobile/screens/register.dart';
-import 'menu.dart'; // Pastikan Anda memiliki file menu.dart dengan widget MenuPage
+import 'package:panganon_mobile/screens/menu.dart'; 
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const LoginApp());
@@ -13,22 +14,25 @@ class LoginApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Login',
-      theme: ThemeData(
-        brightness: Brightness.dark, // Menetapkan tema keseluruhan ke mode gelap
-        primaryColor: Colors.white,
-        scaffoldBackgroundColor: Colors.black,
-        colorScheme: ColorScheme.fromSwatch(
-          primarySwatch: Colors.grey,
+    return Provider(
+      create: (_) => CookieRequest(),
+      child: MaterialApp(
+        title: 'Login',
+        theme: ThemeData(
           brightness: Brightness.dark,
-        ).copyWith(secondary: Colors.white70),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white70),
+          primaryColor: Colors.white,
+          scaffoldBackgroundColor: Colors.black,
+          colorScheme: ColorScheme.fromSwatch(
+            primarySwatch: Colors.grey,
+            brightness: Brightness.dark,
+          ).copyWith(secondary: Colors.white70),
+          textTheme: const TextTheme(
+            bodyLarge: TextStyle(color: Colors.white),
+            bodyMedium: TextStyle(color: Colors.white70),
+          ),
         ),
+        home: const LoginPage(),
       ),
-      home: const LoginPage(),
     );
   }
 }
@@ -44,9 +48,6 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  String jsonResponse = '';  // Variabel untuk menyimpan response JSON
-
-  // Dispose controllers when not needed
   @override
   void dispose() {
     _usernameController.dispose();
@@ -54,81 +55,63 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  // Function to handle login
   Future<void> _handleLogin() async {
     String username = _usernameController.text.trim();
-    String password = _passwordController.text;
+    String password = _passwordController.text.trim();
 
     if (username.isEmpty || password.isEmpty) {
-      // Tampilkan error jika field kosong
       _showErrorDialog('Silakan masukkan username dan password.');
       return;
     }
 
-    // Ganti URL dengan alamat server Anda yang dapat diakses dari perangkat
-    const String loginUrl = "http://127.0.0.1:8000/auth/login_flutter/"; 
-    
-
-    // Catatan:
-    // - Jika Anda menggunakan emulator iOS, gunakan 'http://localhost:8000/auth/login_flutter/'
-    // - Jika Anda menggunakan perangkat fisik, ganti dengan IP lokal komputer Anda, misalnya 'http://192.168.1.100:8000/auth/login_flutter/'
-
+    final request = context.read<CookieRequest>();
+  
     try {
-      final response = await http.post(
-        Uri.parse(loginUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
+      final response = await request.login(
+        "http://127.0.0.1:8000/auth/login_flutter/",
+        {
           'username': username,
           'password': password,
-        }),
+        },
       );
 
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        String message = responseData['message'] ?? 'Login berhasil!';
-        String uname = responseData['username'] ?? username;
+      print('Raw response data: $response');
 
-        // Menyimpan JSON response untuk ditampilkan
-        setState(() {
-          jsonResponse = jsonEncode(responseData);  // Simpan JSON
-        });
+      if (response is Map<String, dynamic> && request.loggedIn) {
+        print('Login successful with response: $response');
+        print('Cookies: ${request.cookies}');
+        final uname = response['username'] ?? username;
 
         if (context.mounted) {
-          // Navigasi ke MenuPage
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => MenuPage(username: uname, profileImageUrl: '',),
+              builder: (context) => MenuPage(username: uname, profileImageUrl: ""),
             ),
           );
 
-          // Tampilkan snackbar sukses
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
               SnackBar(
-                content: Text("$message Welcome, $uname!"),
+                content: Text("Login berhasil! Selamat datang, $uname!"),
                 backgroundColor: Colors.green,
               ),
             );
         }
+      } else if (response is Map<String, dynamic>) {
+        print('Login failed with response: $response');
+        _showErrorDialog(response['message'] ?? 'Login gagal. Silakan coba lagi.');
       } else {
-        // Parsing pesan error dari server
-        final responseData = jsonDecode(response.body);
-        String errorMessage =
-            responseData['message'] ?? 'Login gagal. Silakan coba lagi.';
-        _showErrorDialog(errorMessage);
+        print('Unexpected response format: $response');
+        _showErrorDialog('Terjadi kesalahan. Silakan coba lagi nanti.');
       }
     } catch (e) {
-      // Menangani error jaringan atau error tak terduga
-      _showErrorDialog('Terjadi kesalahan. Silakan coba lagi nanti.');
       print('Login error: $e');
+      _showErrorDialog("Terjadi kesalahan. Silakan coba lagi nanti.");
     }
   }
 
-  // Function to show error dialogs
   void _showErrorDialog(String message) {
     if (context.mounted) {
       showDialog(
@@ -151,7 +134,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Tidak lagi menggunakan provider CookieRequest
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
@@ -196,7 +178,9 @@ class _LoginPageState extends State<LoginPage> {
                         borderSide: BorderSide.none,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12.0, vertical: 8.0),
+                        horizontal: 12.0,
+                        vertical: 8.0,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20.0),
@@ -216,7 +200,9 @@ class _LoginPageState extends State<LoginPage> {
                         borderSide: BorderSide.none,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12.0, vertical: 8.0),
+                        horizontal: 12.0,
+                        vertical: 8.0,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 30.0),
@@ -239,13 +225,14 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30.0),
+                  const SizedBox(height: 20.0),
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const RegisterPage()),
+                          builder: (context) => const RegisterPage(),
+                        ),
                       );
                     },
                     child: const Text(
@@ -257,16 +244,6 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30.0),
-                  // Menampilkan JSON Response jika login berhasil
-                  if (jsonResponse.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: SelectableText(
-                        jsonResponse,  // Menampilkan JSON response
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
                 ],
               ),
             ),
