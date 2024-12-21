@@ -22,16 +22,18 @@ class Restaurant {
   });
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {
-    var fields = json["fields"];
+    // Extract fields from Django's serialized format
+    final fields = json['fields'] as Map<String, dynamic>;
+    
     return Restaurant(
-      id: json["pk"],
-      name: fields["name"] ?? "",
-      rating: (fields["rating"] ?? 0.0).toDouble(),
-      address: fields["address"] ?? "",
-      ratingAmount: fields["rating_amount"] ?? 0,
-      priceRange: fields["price_range"],
-      openingHours: Map<String, String>.from(fields["opening_hours"] ?? {}),
-      services: List<String>.from(fields["services"] ?? []),
+      id: json['pk'].toString(),
+      name: fields['name'] ?? '',
+      rating: fields['rating']?.toDouble() ?? 0.0,
+      address: fields['address'] ?? '',
+      ratingAmount: fields['rating_amount'] ?? 0,
+      priceRange: fields['price_range'],
+      openingHours: Map<String, String>.from(fields['opening_hours'] ?? {}),
+      services: List<String>.from(fields['services'] ?? []),
     );
   }
 }
