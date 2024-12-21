@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:panganon_mobile/screens/daftar_makanan/daftar_makanan.dart';
 import 'package:panganon_mobile/widgets/leftdrawer.dart';
-import 'package:panganon_mobile/screens/forum/home_forum.dart';  
+import 'package:panganon_mobile/screens/forum/home_forum.dart';
 
 class MenuPage extends StatefulWidget {
   final String username;
   final String profileImageUrl;
 
-  MenuPage({
+  const MenuPage({
     super.key,
     required this.username,
     required this.profileImageUrl,
@@ -30,7 +30,7 @@ class _MenuPageState extends State<MenuPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        duration: const Duration(milliseconds: 500), 
+        duration: const Duration(milliseconds: 500),
       ),
     );
   }
@@ -61,56 +61,41 @@ class _MenuPageState extends State<MenuPage> {
               ),
             ),
             Expanded(
-              flex: 1,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
                     child: ItemCard(
                       items[0],
-                      onClick: () => showSnackBar(context, "I clicked the ${items[0].title} button!"),
+                      onClick: () =>
+                          showSnackBar(context, "I clicked the ${items[0].title} button!"),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: ItemCard(
                       items[1],
-                      onClick: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DaftarMakananPage(
-
-                              ),
-                            ),
-                          );
-                      }
+                      onClick: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DaftarMakananPage(),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: ItemCard(
                       items[2],
-                      onClick: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("I clicked the ${items[2].title} button!"),
-                            duration: const Duration(milliseconds: 500),  
+                      onClick: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ForumPage(
+                            username: widget.username,
+                            profileImageUrl: widget.profileImageUrl,
                           ),
-                        );
-
-                        Future.delayed(const Duration(milliseconds: 500), () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ForumPage(
-                                username: widget.username,
-                                profileImageUrl: widget.profileImageUrl,
-                              ),
-                            ),
-                          );
-                        });
-                      },
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -118,21 +103,22 @@ class _MenuPageState extends State<MenuPage> {
             ),
             const SizedBox(height: 20),
             Expanded(
-              flex: 1,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
                     child: ItemCard(
                       items[3],
-                      onClick: () => showSnackBar(context, "I clicked the ${items[3].title} button!"),
+                      onClick: () =>
+                          showSnackBar(context, "I clicked the ${items[3].title} button!"),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: ItemCard(
                       items[4],
-                      onClick: () => showSnackBar(context, "I clicked the ${items[4].title} button!"),
+                      onClick: () =>
+                          showSnackBar(context, "I clicked the ${items[4].title} button!"),
                     ),
                   ),
                 ],
