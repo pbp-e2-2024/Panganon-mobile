@@ -75,11 +75,7 @@ class _LoginPageState extends State<LoginPage> {
         },
       );
 
-      print('Raw response data: $response');
-
       if (response is Map<String, dynamic> && request.loggedIn) {
-        print('Login successful with response: $response');
-        print('Cookies: ${request.cookies}');
         final uname = response['username'] ?? username;
 
         if (context.mounted) {
@@ -100,14 +96,11 @@ class _LoginPageState extends State<LoginPage> {
             );
         }
       } else if (response is Map<String, dynamic>) {
-        print('Login failed with response: $response');
         _showErrorDialog(response['message'] ?? 'Login gagal. Silakan coba lagi.');
       } else {
-        print('Unexpected response format: $response');
         _showErrorDialog('Terjadi kesalahan. Silakan coba lagi nanti.');
       }
     } catch (e) {
-      print('Login error: $e');
       _showErrorDialog("Terjadi kesalahan. Silakan coba lagi nanti.");
     }
   }
