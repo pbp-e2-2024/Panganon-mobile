@@ -46,7 +46,7 @@ class _ForumPageState extends State<ForumPage> {
   Future<void> _fetchLoggedInUserId() async {
     final request = context.read<CookieRequest>();
     try {
-      final response = await request.get('http://127.0.0.1:8000/forum/view/');
+      final response = await request.get('https://brian-altan-panganon.pbp.cs.ui.ac.id/forum/view/');
       setState(() {
         loggedInUserId = response['user_id'];
       });
@@ -55,7 +55,7 @@ class _ForumPageState extends State<ForumPage> {
 
   Future<List<Thread>> fetchThreads() async {
     final response = await http.get(
-      Uri.parse('http://127.0.0.1:8000/forum/'),
+      Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/forum/'),
       headers: {'Accept': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -73,7 +73,7 @@ class _ForumPageState extends State<ForumPage> {
         _isCreating = true;
       });
       final response = await request.post(
-        'http://127.0.0.1:8000/forum/create_thread_flutter/',
+        'https://brian-altan-panganon.pbp.cs.ui.ac.id/forum/create_thread_flutter/',
         {'title': title},
       );
       if (response['statusCode'] == 201) {
@@ -100,7 +100,7 @@ class _ForumPageState extends State<ForumPage> {
         _isDeleting = true;
       });
       final response = await request.post(
-        'http://127.0.0.1:8000/forum/delete_thread_flutter/',
+        'https://brian-altan-panganon.pbp.cs.ui.ac.id/forum/delete_thread_flutter/',
         {'thread_id': threadId.toString()},
       );
       if (response['statusCode'] == 201) {

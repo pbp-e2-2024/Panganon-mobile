@@ -24,7 +24,7 @@ class _ForumPageState extends State<ForumPage> {
 
   // Mengambil data user berdasarkan userId dan forum posts
   Future<void> _fetchUserData() async {
-    final response = await http.get(Uri.parse('http://127.0.0.1:8000/profile/show_json_all/'));
+    final response = await http.get(Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/show_json_all/'));
 
     if (response.statusCode == 200) {
       final List jsonData = json.decode(response.body);

@@ -17,7 +17,7 @@ class LeftDrawer extends StatelessWidget {
 
   Future<void> _logout(BuildContext context) async {
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/auth/logout_flutter/'), // Ganti dengan URL logout Anda
+      Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/auth/logout_flutter/'), // Ganti dengan URL logout Anda
       headers: {'Content-Type': 'application/json'},
     );
 

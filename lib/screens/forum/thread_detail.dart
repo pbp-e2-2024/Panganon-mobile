@@ -27,7 +27,7 @@ class _ThreadDetailPageState extends State<ThreadDetailPage> {
 
   Future<void> _fetchLoggedInUserId() async {
     final request = context.read<CookieRequest>();
-    final response = await request.get('http://127.0.0.1:8000/forum/view/');
+    final response = await request.get('https://brian-altan-panganon.pbp.cs.ui.ac.id/forum/view/');
     setState(() {
       loggedInUserId = response['user_id'];
     });
@@ -41,7 +41,7 @@ class _ThreadDetailPageState extends State<ThreadDetailPage> {
 
   Future<Map<String, dynamic>> fetchThreadDetail() async {
     final response = await http.get(
-      Uri.parse('http://127.0.0.1:8000/forum/thread/${widget.thread.id}/'),
+      Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/forum/thread/${widget.thread.id}/'),
       headers: {'Accept': 'application/json'},
     );
 
@@ -56,7 +56,7 @@ class _ThreadDetailPageState extends State<ThreadDetailPage> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.post(
-        'http://127.0.0.1:8000/forum/thread/${widget.thread.id}/add_post_flutter/',
+        'https://brian-altan-panganon.pbp.cs.ui.ac.id/forum/thread/${widget.thread.id}/add_post_flutter/',
         {'content': content},
       );
 
@@ -77,7 +77,7 @@ class _ThreadDetailPageState extends State<ThreadDetailPage> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.post(
-        'http://127.0.0.1:8000/forum/post/comment_flutter/',
+        'https://brian-altan-panganon.pbp.cs.ui.ac.id/forum/post/comment_flutter/',
         {
           'post_id': postId.toString(),
           'content': content,
@@ -188,7 +188,7 @@ class _ThreadDetailPageState extends State<ThreadDetailPage> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.post(
-        'http://127.0.0.1:8000/forum/post_edit_flutter/',
+        'https://brian-altan-panganon.pbp.cs.ui.ac.id/forum/post_edit_flutter/',
         {
           'post_id': postId.toString(),
           'content': newContent,
@@ -212,7 +212,7 @@ class _ThreadDetailPageState extends State<ThreadDetailPage> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.post(
-        'http://127.0.0.1:8000/forum/comment_edit_flutter/',
+        'https://brian-altan-panganon.pbp.cs.ui.ac.id/forum/comment_edit_flutter/',
         {
           'comment_id': commentId.toString(),
           'content': newContent,
@@ -282,7 +282,7 @@ class _ThreadDetailPageState extends State<ThreadDetailPage> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.post(
-        'http://127.0.0.1:8000/forum/delete_post_flutter/',
+        'https://brian-altan-panganon.pbp.cs.ui.ac.id/forum/delete_post_flutter/',
         {'post_id': postId.toString()},
       );
 
@@ -303,7 +303,7 @@ class _ThreadDetailPageState extends State<ThreadDetailPage> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.post(
-        'http://127.0.0.1:8000/forum/delete_comment_flutter/',
+        'https://brian-altan-panganon.pbp.cs.ui.ac.id/forum/delete_comment_flutter/',
         {'comment_id': commentId.toString()},
       );
 

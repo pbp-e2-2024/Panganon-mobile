@@ -35,7 +35,7 @@ class _AboutMePageState extends State<AboutMePage> {
   // Fungsi untuk mengambil data JSON dan mengonversinya menggunakan model
   Future<AboutMeModels> fetchUserProfile(String username) async {
     final request = context.read<CookieRequest>();
-    final response = await request.get('http://127.0.0.1:8000/profile/show_json_all/');
+    final response = await request.get('https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/show_json_all/');
 
     if (response is List) {
       // Mencari profile berdasarkan username yang sedang login
@@ -85,7 +85,7 @@ class _AboutMePageState extends State<AboutMePage> {
 
   Future<void> _updateName(int userId, String newName) async {
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/profile/edit_name/$userId/'),
+      Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/edit_name/$userId/'),
       body: json.encode({'name': newName}),
       headers: {'Content-Type': 'application/json'},
     );
@@ -136,7 +136,7 @@ class _AboutMePageState extends State<AboutMePage> {
 
   Future<void> _updateBio(int userId, String newBio) async {
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/profile/edit_bio/$userId/'),
+      Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/edit_bio/$userId/'),
       body: json.encode({'bio': newBio}),
       headers: {'Content-Type': 'application/json'},
     );
@@ -153,7 +153,7 @@ class _AboutMePageState extends State<AboutMePage> {
 
   Future<List<String>> fetchUserPreferences(int userId) async {
     final response = await http.get(
-      Uri.parse('http://127.0.0.1:8000/profile/get_preferences/$userId/'),
+      Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/get_preferences/$userId/'),
     );
 
     if (response.statusCode == 200) {
@@ -224,7 +224,7 @@ class _AboutMePageState extends State<AboutMePage> {
     // Hanya mengirim preferensi yang unik dan mengubah menjadi format string
     final uniquePreferences = newPreferences.toSet().toList();  // Menghapus duplikasi
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/profile/edit_preferences/$userId/'),
+      Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/edit_preferences/$userId/'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'preferences': uniquePreferences}),
     );
