@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:panganon_mobile/screens/about_me/aboutme_page.dart';
+import 'package:panganon_mobile/screens/daftar_makanan/daftar_makanan.dart';
 import 'package:panganon_mobile/screens/login.dart';
 import 'dart:convert';
 
@@ -87,7 +88,12 @@ class LeftDrawer extends StatelessWidget {
             title: const Text('Daftar Makanan', style: TextStyle(color: Colors.white)),
             onTap: () {
               // Aksi untuk membuka halaman Daftar Makanan
-              Navigator.pushNamed(context, '/food_list');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DaftarMakananPage(),
+                ),
+              );
             },
           ),
           ListTile(
