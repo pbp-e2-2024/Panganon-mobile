@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
 import 'package:panganon_mobile/screens/event/event_form.dart';
 import 'package:panganon_mobile/screens/event/event_list.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
@@ -156,6 +157,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           icon: Icon(Icons.arrow_back),
                           label: Text('Back'),
                         ),
+                        context.read<CookieRequest>().getJsonData()['username'] == event['created_by']['username'] ?
                         Row(
                           children: [
                             ElevatedButton.icon(
@@ -186,7 +188,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                               label: Text('Delete'),
                             ),
                           ],
-                        ),
+                        ) : const SizedBox.shrink(),
                       ],
                     ),
                   ],

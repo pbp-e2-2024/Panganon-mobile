@@ -120,10 +120,11 @@ class _EventListPageState extends State<EventListPage> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      context.read<CookieRequest>().getJsonData()['username'] == event['created_by']['username'] ?
                       IconButton(
                         icon: Icon(Icons.delete, color: Colors.red),
                         onPressed: () => deleteEvent(event['id']),
-                      ),
+                      ) : SizedBox.shrink(),
                     ],
                   ),
                   SizedBox(height: 6),
