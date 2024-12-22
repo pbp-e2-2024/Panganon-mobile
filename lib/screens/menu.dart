@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:panganon_mobile/widgets/leftdrawer.dart';
-import 'package:panganon_mobile/screens/forum/home_forum.dart';  
+import 'package:panganon_mobile/screens/forum/home_forum.dart';
+import 'package:panganon_mobile/screens/event/event_list.dart'; // Tambahkan import ini
 
 class MenuPage extends StatefulWidget {
   final String username;
@@ -122,7 +123,15 @@ class _MenuPageState extends State<MenuPage> {
                   Expanded(
                     child: ItemCard(
                       items[4],
-                      onClick: () => showSnackBar(context, "I clicked the ${items[4].title} button!"),
+                      onClick: () {
+                        // Navigasi ke halaman EventListPage ketika tombol Event ditekan
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EventListPage(), // Mengarah ke EventListPage
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
