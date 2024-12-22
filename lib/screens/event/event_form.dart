@@ -38,7 +38,7 @@ class _EventFormPageState extends State<EventFormPage> {
 
   Future<void> fetchEventData(int eventId) async {
     setState(() => isLoading = true);
-    final url = Uri.parse('http://127.0.0.1:8000/event/$eventId/');
+    final url = Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/event/$eventId/');
     final response = await http.get(
       url,
       headers: {'X-Requested-With': 'XMLHttpRequest'},
@@ -78,8 +78,8 @@ class _EventFormPageState extends State<EventFormPage> {
       final request = context.read<CookieRequest>();
 
       final url = widget.eventId != null
-          ? 'http://127.0.0.1:8000/event/${widget.eventId}/edit-flutter/'
-          : 'http://127.0.0.1:8000/event/create-flutter/';
+          ? 'https://brian-altan-panganon.pbp.cs.ui.ac.id/event/${widget.eventId}/edit-flutter/'
+          : 'https://brian-altan-panganon.pbp.cs.ui.ac.id/event/create-flutter/';
 
       // Perform the POST request using the CookieRequest instance
       final data = await request.post(

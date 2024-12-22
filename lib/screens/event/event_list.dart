@@ -21,7 +21,7 @@ class _EventListPageState extends State<EventListPage> {
   }
 
   Future<void> fetchEvents() async {
-    final url = Uri.parse('http://127.0.0.1:8000/event/');
+    final url = Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/event/');
     try {
       final response =
       await http.get(url, headers: {'X-Requested-With': 'XMLHttpRequest'});
@@ -41,7 +41,7 @@ class _EventListPageState extends State<EventListPage> {
     try {
       final request = context.read<CookieRequest>();
       final url =
-          'http://127.0.0.1:8000/event/$eventId/delete-flutter/';
+          'https://brian-altan-panganon.pbp.cs.ui.ac.id/event/$eventId/delete-flutter/';
       final response = await request.post(url, '');
       if (response['success']) {
         ScaffoldMessenger.of(context).showSnackBar(

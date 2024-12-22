@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:panganon_mobile/screens/about_me/aboutme_page.dart';
 import 'package:panganon_mobile/screens/daftar_makanan/daftar_makanan.dart';
+import 'package:panganon_mobile/screens/event/event_list.dart';
 import 'package:panganon_mobile/screens/login.dart';
 import 'package:panganon_mobile/screens/forum/home_forum.dart'; // Change this import
 import 'dart:convert';
@@ -126,9 +127,12 @@ class LeftDrawer extends StatelessWidget {
             leading: const Icon(Icons.event, color: Colors.black),
             title: const Text('Event', style: TextStyle(color: Colors.black)),
             onTap: () {
-              // TODO: Replace with actual navigation when page is ready
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Feature coming soon!")),
+              // Aksi untuk membuka halaman Daftar Makanan
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventListPage(),
+                ),
               );
             },
           ),

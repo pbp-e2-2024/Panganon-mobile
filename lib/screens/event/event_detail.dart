@@ -27,7 +27,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   Future<void> fetchEventDetails() async {
-    final url = Uri.parse('http://127.0.0.1:8000/event/${widget.eventId}');
+    final url = Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/event/${widget.eventId}');
     final response =
         await http.get(url, headers: {'X-Requested-With': 'XMLHttpRequest'});
 
@@ -44,7 +44,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
   Future<void> deleteEvent() async {
     final request = context.read<CookieRequest>();
     final url =
-        'http://127.0.0.1:8000/event/${widget.eventId}/delete-flutter/';
+        'https://brian-altan-panganon.pbp.cs.ui.ac.id/event/${widget.eventId}/delete-flutter/';
     final response = await request.post(url, '');
 
     if (response['success']) {
