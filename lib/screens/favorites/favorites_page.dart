@@ -21,7 +21,7 @@ class _FavoriteRestaurantsScreenState extends State<FavoriteRestaurantsScreen> {
 
   Future<void> fetchFavorites() async {
     // Replace with your API endpoint to fetch favorite restaurants
-    final response = await http.get(Uri.parse('https:/127.0.0.1:8000/favorites'));
+    final response = await http.get(Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/favorites'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -36,7 +36,7 @@ class _FavoriteRestaurantsScreenState extends State<FavoriteRestaurantsScreen> {
   Future<void> removeFavorite(int restaurantId) async {
     // Replace with your API endpoint to remove a favorite restaurant
     final response = await http.post(
-      Uri.parse('https://example.com/favorites/remove_favorite/$restaurantId/'),
+      Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/favorites/remove_favorite/$restaurantId/'),
       headers: {'Content-Type': 'application/json'},
     );
 

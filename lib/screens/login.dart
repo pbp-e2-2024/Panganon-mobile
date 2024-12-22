@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:panganon_mobile/screens/menu.dart';
 import 'package:panganon_mobile/screens/register.dart';
-import 'package:panganon_mobile/screens/menu.dart'; 
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -14,25 +13,44 @@ class LoginApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Provider(
-      create: (_) => CookieRequest(),
-      child: MaterialApp(
-        title: 'Login',
-        theme: ThemeData(
-          brightness: Brightness.dark,
-          primaryColor: Colors.white,
-          scaffoldBackgroundColor: Colors.black,
-          colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: Colors.grey,
-            brightness: Brightness.dark,
-          ).copyWith(secondary: Colors.white70),
-          textTheme: const TextTheme(
-            bodyLarge: TextStyle(color: Colors.white),
-            bodyMedium: TextStyle(color: Colors.white70),
+    return MaterialApp(
+      title: 'Login',
+      theme: ThemeData(
+        // Set a dark theme
+        brightness: Brightness.dark,
+        primaryColor: Colors.black,
+        scaffoldBackgroundColor: Colors.black,
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.grey,
+        ).copyWith(secondary: const Color.fromARGB(255, 171, 129, 110)),
+        inputDecorationTheme: const InputDecorationTheme(
+          labelStyle: TextStyle(color: Colors.white),
+          hintStyle: TextStyle(color: Colors.white54),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.white),
+            borderRadius: BorderRadius.all(Radius.circular(12.0)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.white),
+            borderRadius: BorderRadius.all(Radius.circular(12.0)),
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12.0)),
           ),
         ),
-        home: const LoginPage(),
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(color: Colors.white),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 50),
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+          ),
+        ),
       ),
+      home: const LoginPage(),
     );
   }
 }
@@ -48,92 +66,27 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleLogin() async {
-    String username = _usernameController.text.trim();
-    String password = _passwordController.text.trim();
-
-    if (username.isEmpty || password.isEmpty) {
-      _showErrorDialog('Silakan masukkan username dan password.');
-      return;
-    }
-
-    final request = context.read<CookieRequest>();
-  
-    try {
-      final response = await request.login(
-        "https://brian-altan-panganon.pbp.cs.ui.ac.id/auth/login_flutter/",
-        {
-          'username': username,
-          'password': password,
-        },
-      );
-
-      if (response is Map<String, dynamic> && request.loggedIn) {
-        final uname = response['username'] ?? username;
-
-        if (context.mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MenuPage(username: uname, profileImageUrl: ""),
-            ),
-          );
-
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text("Login berhasil! Selamat datang, $uname!"),
-                backgroundColor: Colors.green,
-              ),
-            );
-        }
-      } else if (response is Map<String, dynamic>) {
-        _showErrorDialog(response['message'] ?? 'Login gagal. Silakan coba lagi.');
-      } else {
-        _showErrorDialog('Terjadi kesalahan. Silakan coba lagi nanti.');
-      }
-    } catch (e) {
-      _showErrorDialog("Terjadi kesalahan. Silakan coba lagi nanti.");
-    }
-  }
-
-  void _showErrorDialog(String message) {
-    if (context.mounted) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Login Gagal'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      );
-    }
+  // Helper method to show SnackBar
+  void _showSnackbar(BuildContext context, String message, bool success) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: success ? Colors.green : Colors.red,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Card(
-            color: Colors.grey[900],
             elevation: 8,
+            color: Colors.grey[900],
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
@@ -145,90 +98,81 @@ class _LoginPageState extends State<LoginPage> {
                   const Text(
                     'Login',
                     style: TextStyle(
-                      fontSize: 28.0,
+                      fontSize: 24.0,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 30.0),
-                  TextField(
+                  _buildTextField(
                     controller: _usernameController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'Username',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      hintText: 'Masukkan username Anda',
-                      hintStyle: const TextStyle(color: Colors.white54),
-                      filled: true,
-                      fillColor: Colors.grey[800],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 8.0,
-                      ),
-                    ),
+                    label: 'Username',
+                    hint: 'Enter your username',
                   ),
-                  const SizedBox(height: 20.0),
-                  TextField(
+                  const SizedBox(height: 12.0),
+                  _buildTextField(
                     controller: _passwordController,
+                    label: 'Password',
+                    hint: 'Enter your password',
                     obscureText: true,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      hintText: 'Masukkan password Anda',
-                      hintStyle: const TextStyle(color: Colors.white54),
-                      filled: true,
-                      fillColor: Colors.grey[800],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 8.0,
-                      ),
-                    ),
                   ),
-                  const SizedBox(height: 30.0),
+                  const SizedBox(height: 24.0),
                   ElevatedButton(
-                    onPressed: _handleLogin,
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black,
-                      backgroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    ),
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    onPressed: () async {
+                      String username = _usernameController.text.trim();
+                      String password = _passwordController.text;
+
+                      if (username.isEmpty || password.isEmpty) {
+                        _showSnackbar(
+                            context, 'Please fill all the fields!', false);
+                        return;
+                      }
+
+                      final response = await request.login(
+                        "https://brian-altan-panganon.pbp.cs.ui.ac.id/auth/login_flutter/",
+                        {
+                          'username': username,
+                          'password': password,
+                        },
+                      );
+
+                      if (request.loggedIn) {
+                        String message = response['message'] ?? 'Login successful!';
+                        String uname = response['username'] ?? username;
+                        if (context.mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    MenuPage(username: uname, profileImageUrl: '')),
+                          );
+                          _showSnackbar(
+                              context, "$message Selamat datang, $uname.", true);
+                        }
+                      } else {
+                        String errorMessage =
+                            response['message'] ?? 'Login failed!';
+                        if (context.mounted) {
+                          _showSnackbar(context, errorMessage, false);
+                        }
+                      }
+                    },
+                    child: const Text('Login'),
                   ),
-                  const SizedBox(height: 20.0),
+                  const SizedBox(height: 36.0),
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const RegisterPage(),
-                        ),
+                            builder: (context) => const RegisterPage()),
                       );
                     },
-                    child: const Text(
-                      'Belum memiliki akun? Register',
+                    child: Text(
+                      'Don\'t have an account? Register',
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: Theme.of(context).colorScheme.secondary,
                         fontSize: 16.0,
-                        decoration: TextDecoration.underline,
                       ),
                     ),
                   ),
@@ -238,6 +182,36 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    bool obscureText = false,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        labelStyle: const TextStyle(color: Colors.white),
+        hintStyle: const TextStyle(color: Colors.white54),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white),
+        ),
+      ),
+      style: const TextStyle(color: Colors.white),
+      obscureText: obscureText,
     );
   }
 }

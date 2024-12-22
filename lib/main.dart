@@ -21,12 +21,21 @@ class MyApp extends StatelessWidget {
         title: 'Panganon',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: Colors.grey,
-          ).copyWith(secondary: Colors.white),
+          colorScheme: const ColorScheme(
+            brightness: Brightness.light,
+            primary: Colors.black, // Primary color
+            onPrimary: Colors.white, // Text/Icon color on primary
+            secondary: Colors.grey, // Secondary color
+            onSecondary: Colors.white, // Text/Icon color on secondary
+            error: Colors.red, // Error color
+            onError: Colors.white, // Text/Icon color on error
+            surface: Colors.white, // Surface color
+            onSurface: Colors.black, // Text/Icon color on surface
+          ),
         ),
         home: const LoginPage(),
       ),
     );
   }
 }
+

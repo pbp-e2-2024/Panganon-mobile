@@ -1,118 +1,83 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:panganon_mobile/models/aboutme_entry.dart';
 
-class ForumPage extends StatefulWidget {
-  final int userId; // Menerima userId sebagai parameter
 
-  ForumPage({required this.userId});
+class ForumPage extends StatelessWidget {
+  final List<ForumPost> forumPosts;
+  final String username;
 
-  @override
-  _ForumPageState createState() => _ForumPageState();
-}
-
-class _ForumPageState extends State<ForumPage> {
-  List<ForumPost> userForumPosts = [];
-  String username = ""; // Menyimpan username dari user
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchUserData();
-  }
-
-  // Mengambil data user berdasarkan userId dan forum posts
-  Future<void> _fetchUserData() async {
-    final response = await http.get(Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/show_json_all/'));
-
-    if (response.statusCode == 200) {
-      final List jsonData = json.decode(response.body);
-      
-      // Memfilter data pengguna berdasarkan userId yang diterima
-      final user = jsonData.firstWhere((user) => user['userID'] == widget.userId, orElse: () => null);
-
-      if (user != null) {
-        setState(() {
-          username = user['username']; // Ambil username
-          userForumPosts = (user['forum_posts'] as List)
-              .map((post) => ForumPost.fromJson(post))
-              .toList();
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-          userForumPosts = [];
-        });
-      }
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-      print('Failed to load user data');
-    }
-  }
+  const ForumPage({
+    required this.forumPosts,
+    required this.username,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("All Forum Posts by @$username"),
+        title: Text("All Forum Posts by $username"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator()) // Menampilkan loading jika belum ada data
-          : userForumPosts.isEmpty
-              ? Center(child: Text("No forum posts available."))
-              : Column(
-                  children: [
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: userForumPosts.length,
-                        itemBuilder: (context, index) {
-                          var post = userForumPosts[index];
-                          return ListTile(
-                            title: Text(post.threadTitle),
-                            subtitle: Text(post.content),
-                            onTap: () {
-                              // Menambahkan navigasi ke halaman detail post jika diperlukan
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text("Page 1 of 1"),
-                    ),
-                  ],
+      body: forumPosts.isEmpty
+          ? const Center(
+              child: Text(
+                "No forum posts available.",
+                style: TextStyle(fontSize: 16),
+              ),
+            )
+          : Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: forumPosts.length,
+                    itemBuilder: (context, index) {
+                      final post = forumPosts[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              post.threadTitle,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              post.content,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Posted on ${_formatDate(post.createdAt)}',
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const Divider(height: 32),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
+              ],
+            ),
     );
   }
-}
 
-class ForumPost {
-  final int postId;
-  final String threadTitle;
-  final String content;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-
-  ForumPost({
-    required this.postId,
-    required this.threadTitle,
-    required this.content,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-
-  factory ForumPost.fromJson(Map<String, dynamic> json) {
-    return ForumPost(
-      postId: json["post_id"],
-      threadTitle: json["thread_title"],
-      content: json["content"],
-      createdAt: DateTime.parse(json["created_at"]),
-      updatedAt: DateTime.parse(json["updated_at"]),
-    );
+  String _formatDate(DateTime date) {
+    // Format tanggal sesuai kebutuhan Anda
+    return "${date.day}-${date.month}-${date.year} ${date.hour}:${date.minute}";
   }
 }

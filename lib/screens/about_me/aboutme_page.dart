@@ -2,15 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:panganon_mobile/models/aboutme_entry.dart';
 import 'package:panganon_mobile/screens/about_me/forumpage.dart';
+import 'package:panganon_mobile/widgets/leftdrawer.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart'; // Untuk CookieRequest
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
 
 class AboutMePage extends StatefulWidget {
-  final String username; // Menambahkan parameter untuk username yang sedang login
-
-  AboutMePage({required this.username});
-
   @override
   _AboutMePageState createState() => _AboutMePageState();
 }
@@ -29,24 +25,32 @@ class _AboutMePageState extends State<AboutMePage> {
   @override
   void initState() {
     super.initState();
-    futureProfile = fetchUserProfile(widget.username); // Mengambil data profile berdasarkan username yang login
+    futureProfile = fetchUserProfile(context);
   }
 
-  // Fungsi untuk mengambil data JSON dan mengonversinya menggunakan model
-  Future<AboutMeModels> fetchUserProfile(String username) async {
-    final request = context.read<CookieRequest>();
-    final response = await request.get('https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/show_json_all/');
-
-    if (response is List) {
-      // Mencari profile berdasarkan username yang sedang login
-      for (var user in response) {
-        if (user['username'] == username) {
-          return AboutMeModels.fromJson(user); // Kembalikan profile yang sesuai
-        }
+  Future<AboutMeModels> fetchUserProfile(BuildContext context) async {
+    try {
+      final request = context.read<CookieRequest>();
+      
+      final response = await request.get('https://brian-altan-panganon.pbp.cs.ui.ac.id/show_json_all/')
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw Exception('Connection timeout'),
+          );
+      
+      if (response == null) {
+        throw Exception('Empty response from server');
       }
-      throw Exception('User profile not found');
-    } else {
-      throw Exception('Failed to load user profiles');
+      
+      // Langsung convert dan return response
+      if (response is Map) {
+        return AboutMeModels.fromJson(Map<String, dynamic>.from(response));
+      } else {
+        throw Exception('Invalid response format');
+      }
+    } catch (e) {
+      print('Error fetching profile: $e');
+      rethrow;
     }
   }
 
@@ -81,24 +85,101 @@ class _AboutMePageState extends State<AboutMePage> {
         );
       },
     );
+    
   }
 
   Future<void> _updateName(int userId, String newName) async {
-    final response = await http.post(
-      Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/edit_name/$userId/'),
-      body: json.encode({'name': newName}),
-      headers: {'Content-Type': 'application/json'},
-    );
+  final request = context.read<CookieRequest>();
+  
+  final response = await request.post(
+    'https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/edit_name/$userId/',
+    jsonEncode({
+      'name': newName
+    })
+  );
 
-    if (response.statusCode == 200) {
-      setState(() {
-        // Refresh profile setelah update
-        futureProfile = fetchUserProfile(widget.username);
-      });
-    } else {
-      print('Failed to update name');
-    }
+  if (response != null) {
+    setState(() {
+      // Refresh profile setelah update
+      futureProfile = fetchUserProfile(context);
+    });
+  } else {
+    print('Failed to update name');
   }
+}
+
+Future<void> _updateBio(int userId, String newBio) async {
+  final request = context.read<CookieRequest>();
+  
+  final response = await request.post(
+    'https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/edit_bio/$userId/',
+    jsonEncode({
+      'bio': newBio
+    })
+  );
+
+  if (response != null) {
+    setState(() {
+      // Refresh profile setelah update
+      futureProfile = fetchUserProfile(context);
+    });
+  } else {
+    print('Failed to update bio');
+  }
+}
+
+Future<List<String>> fetchUserPreferences(int userId) async {
+  final request = context.read<CookieRequest>();
+  
+  final response = await request.get(
+    'https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/get_preferences/$userId/'
+  );
+
+  if (response != null) {
+    return List<String>.from(response['preferences'].split(',').map((e) => e.trim()).where((e) => e.isNotEmpty));
+  } else {
+    throw Exception('Failed to load preferences');
+  }
+}
+
+Future<void> _updatePreferences(int userId, List<String> newPreferences) async {
+  final request = context.read<CookieRequest>();
+  
+  // Hanya mengirim preferensi yang unik
+  final uniquePreferences = newPreferences.toSet().toList();
+  
+  final response = await request.post(
+    'https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/edit_preferences/$userId/',
+    jsonEncode({
+      'preferences': uniquePreferences
+    })
+  );
+
+  if (response != null) {
+    setState(() {
+      futureProfile = fetchUserProfile(context);
+    });
+  } else {
+    print('Failed to update preferences');
+  }
+}
+
+  // Future<void> _updateName(int userId, String newName) async {
+  //   final response = await http.post(
+  //     Uri.parse('http://127.0.0.1:8000/profile/edit_name/$userId/'),
+  //     body: json.encode({'name': newName}),
+  //     headers: {'Content-Type': 'application/json'},
+  //   );
+
+  //   if (response.statusCode == 200) {
+  //     setState(() {
+  //       // Refresh profile setelah update
+  //       futureProfile = fetchUserProfile(context);
+  //     });
+  //   } else {
+  //     print('Failed to update name');
+  //   }
+  // }
 
   // Dialog untuk mengedit bio
   void _showEditBioDialog(BuildContext context, int userId, String currentBio) {
@@ -134,117 +215,129 @@ class _AboutMePageState extends State<AboutMePage> {
     );
   }
 
-  Future<void> _updateBio(int userId, String newBio) async {
-    final response = await http.post(
-      Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/edit_bio/$userId/'),
-      body: json.encode({'bio': newBio}),
-      headers: {'Content-Type': 'application/json'},
-    );
+  // Future<void> _updateBio(int userId, String newBio) async {
+  //   final response = await http.post(
+  //     Uri.parse('http://127.0.0.1:8000/profile/edit_bio/$userId/'),
+  //     body: json.encode({'bio': newBio}),
+  //     headers: {'Content-Type': 'application/json'},
+  //   );
 
-    if (response.statusCode == 200) {
-      setState(() {
-        // Refresh profile setelah update
-        futureProfile = fetchUserProfile(widget.username);
-      });
-    } else {
-      print('Failed to update bio');
-    }
-  }
+  //   if (response.statusCode == 200) {
+  //     setState(() {
+  //       // Refresh profile setelah update
+  //       futureProfile = fetchUserProfile(context);
+  //     });
+  //   } else {
+  //     print('Failed to update bio');
+  //   }
+  // }
 
-  Future<List<String>> fetchUserPreferences(int userId) async {
-    final response = await http.get(
-      Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/get_preferences/$userId/'),
-    );
+ 
+  // Future<List<String>> fetchUserPreferences(int userId) async {
+  //   final response = await http.get(
+  //     Uri.parse('http://127.0.0.1:8000/profile/get_preferences/$userId/'),
+  //   );
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return List<String>.from(data['preferences']);
-    } else {
-      throw Exception('Failed to load preferences');
-    }
-  }
+  //   if (response.statusCode == 200) {
+  //     final data = json.decode(response.body);
+  //     return List<String>.from(data['preferences']);
+  //   } else {
+  //     throw Exception('Failed to load preferences');
+  //   }
+  // }
 
   void _showEditPreferencesDialog(BuildContext context, int userId, List<String> currentPreferences) {
-    // Salin preferensi yang sudah ada
-    _selectedPreferences = List.from(currentPreferences);
+  // Salin preferensi yang sudah ada
+  List<String> _selectedPreferences = List.from(currentPreferences);
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Edit Food Preferences'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: _foodPreferences.map((preference) {
-              // Cek apakah preferensi sudah ada dalam list yang dipilih
-              bool isSelected = _selectedPreferences.contains(preference);
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setDialogState) {
+          return AlertDialog(
+            title: const Text('Edit Food Preferences'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: _foodPreferences.map((preference) {
+                // Cek apakah preferensi sudah ada dalam list yang dipilih
+                bool isSelected = _selectedPreferences.contains(preference);
 
-              return CheckboxListTile(
-                title: Text(preference),
-                value: isSelected,
-                onChanged: (bool? selected) {
-                  setState(() {
-                    if (selected != null) {
-                      if (selected) {
-                        // Jika dipilih, tambahkan ke _selectedPreferences
-                        _selectedPreferences.add(preference);
-                      } else {
-                        // Jika tidak dipilih, hapus dari _selectedPreferences
-                        _selectedPreferences.remove(preference);
+                return CheckboxListTile(
+                  title: Text(preference),
+                  value: isSelected,
+                  onChanged: (bool? selected) {
+                    setDialogState(() {
+                      if (selected != null) {
+                        if (selected) {
+                          _selectedPreferences.add(preference);
+                        } else {
+                          _selectedPreferences.remove(preference);
+                        }
                       }
-                    }
-                  });
+                    });
+                  },
+                  activeColor: Colors.green, // Warna kotak centang
+                  checkColor: Colors.white, // Warna centang
+                );
+              }).toList(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Menutup dialog tanpa perubahan
                 },
-                activeColor: isSelected ? Colors.green : Colors.grey, // Ubah warna saat dipilih
-                checkColor: Colors.white, // Warna centang
-              );
-            }).toList(),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Menutup dialog tanpa perubahan
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                _updatePreferences(userId, _selectedPreferences); // Simpan preferensi yang dipilih
-                Navigator.of(context).pop(); // Tutup dialog setelah menyimpan
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  _updatePreferences(userId, _selectedPreferences); // Simpan preferensi yang dipilih
+                  Navigator.of(context).pop(); // Tutup dialog setelah menyimpan
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
 
-  Future<void> _updatePreferences(int userId, List<String> newPreferences) async {
-    // Hanya mengirim preferensi yang unik dan mengubah menjadi format string
-    final uniquePreferences = newPreferences.toSet().toList();  // Menghapus duplikasi
-    final response = await http.post(
-      Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/profile/edit_preferences/$userId/'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'preferences': uniquePreferences}),
-    );
+  // Future<void> _updatePreferences(int userId, List<String> newPreferences) async {
+  //   // Hanya mengirim preferensi yang unik dan mengubah menjadi format string
+  //   final uniquePreferences = newPreferences.toSet().toList();  // Menghapus duplikasi
+  //   final response = await http.post(
+  //     Uri.parse('http://127.0.0.1:8000/profile/edit_preferences/$userId/'),
+  //     headers: {'Content-Type': 'application/json'},
+  //     body: json.encode({'preferences': uniquePreferences}),
+  //   );
 
-    if (response.statusCode == 200) {
-      setState(() {
-        futureProfile = fetchUserProfile(widget.username);
-      });
-    } else {
-      print('Failed to update preferences');
-    }
-  }
+  //   if (response.statusCode == 200) {
+  //     setState(() {
+  //       futureProfile = fetchUserProfile(context);
+  //     });
+  //   } else {
+  //     print('Failed to update preferences');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('About Me'),
-        backgroundColor: Colors.white,
-      ),
+  title: const Text('About Me', style: TextStyle(color: Colors.black)),
+  backgroundColor: Colors.white,
+  iconTheme: const IconThemeData(
+    color: Colors.black, // Mengatur ikon AppBar menjadi putih
+  ),
+  titleTextStyle: const TextStyle(
+    color: Colors.white, // Mengatur warna teks judul AppBar
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+  ),
+),
+    drawer: const LeftDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: FutureBuilder<AboutMeModels>(
@@ -263,37 +356,46 @@ class _AboutMePageState extends State<AboutMePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Foto Profil
                     Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade800,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: CircleAvatar(
-                          radius: 60,
-                          backgroundColor: Colors.grey.shade500,
-                          child: const Icon(
-                            Icons.person,
-                            size: 50,
-                            color: Colors.white,
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade800,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: CircleAvatar(
+                            radius: 60,
+                            backgroundImage: NetworkImage(
+                              'https://brian-altan-panganon.pbp.cs.ui.ac.id/auth/image/${profile.userID}/',
+                            ),
+                            backgroundColor: Colors.grey.shade500,
                           ),
                         ),
                       ),
-                    ),
+
                     const SizedBox(height: 16),
+
+                    Center(
+                      child: Text(
+                        '@${profile.username}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     // Nama dan Username
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          profile.username,
+                            profile.name.isNotEmpty ? profile.name : profile.username,
                           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           icon: const Icon(Icons.edit),
-                          onPressed: () => _showEditNameDialog(context, profile.userId, profile.username),
+                          onPressed: () => _showEditNameDialog(context, profile.userID, profile.name),
                         ),
                       ],
                     ),
@@ -304,29 +406,46 @@ class _AboutMePageState extends State<AboutMePage> {
                       subtitle: Text(profile.bio ?? 'No bio available'),
                       trailing: IconButton(
                         icon: const Icon(Icons.edit),
-                        onPressed: () => _showEditBioDialog(context, profile.userId, profile.bio ?? ''),
+                        onPressed: () => _showEditBioDialog(context, profile.userID, profile.bio ?? ''),
                       ),
                     ),
                     const SizedBox(height: 16),
                     // Preferensi Makanan
                     ListTile(
-                      title: const Text('Food Preferences'),
-                      subtitle: Text(profile.foodPreferences.isEmpty ? 'No preferences set' : profile.foodPreferences.join(', ')),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () => _showEditPreferencesDialog(context, profile.userId, profile.foodPreferences),
-                      ),
-                    ),
+                            title: const Text('Food Preferences'),
+                            subtitle: Text(
+                              profile.foodPreference.isEmpty 
+                                ? 'No preferences set' 
+                                : profile.foodPreference,
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                String rawPreferences = profile.foodPreference.trim(); 
+                                List<String> preferencesList = rawPreferences
+                                    .split(',') 
+                                    .map((preference) => preference.trim()) 
+                                    .where((preference) => preference.isNotEmpty)
+                                    .toList();
+                                _showEditPreferencesDialog(context, profile.userID, preferencesList);
+                              },
+                            ),
+                          ),
+
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         // Navigasi ke halaman forum
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => ForumPage(userId: profile.userId)),
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => ForumPage(
+                              forumPosts: profile.forumPosts, // Now List<ForumPost>
+                              username: profile.username,
+                            ),
+                        ),
                         );
                       },
-                      child: const Text('Go to Forum'), // Menambahkan teks atau widget lain di dalam tombol
+                      child: const Text('Go to Forum'), 
                     )
 
 
@@ -340,3 +459,4 @@ class _AboutMePageState extends State<AboutMePage> {
     );
   }
 }
+

@@ -1,73 +1,82 @@
-// To parse this JSON data, do
-//
-//     final aboutMeModels = aboutMeModelsFromJson(jsonString);
-
-import 'dart:convert';
-
-List<AboutMeModels> aboutMeModelsFromJson(String str) => List<AboutMeModels>.from(json.decode(str).map((x) => AboutMeModels.fromJson(x)));
-
-String aboutMeModelsToJson(List<AboutMeModels> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class AboutMeModels {
-    int userId;
-    String username;
-    String? bio;
-    List<String> foodPreferences;
-    List<ForumPost> forumPosts;
+  final int userID;
+  final String name;
+  final String username;
+  final String? bio;
+  final String foodPreference;
+  final List<ForumPost> forumPosts;
 
-    AboutMeModels({
-        required this.userId,
-        required this.username,
-        required this.bio,
-        required this.foodPreferences,
-        required this.forumPosts,
-    });
 
-    factory AboutMeModels.fromJson(Map<String, dynamic> json) => AboutMeModels(
-        userId: json["userID"],
-        username: json["username"],
-        bio: json["bio"],
-        foodPreferences: List<String>.from(json["food_preferences"].map((x) => x)),
-        forumPosts: List<ForumPost>.from(json["forum_posts"].map((x) => ForumPost.fromJson(x))),
-    );
+  AboutMeModels({
+    required this.userID,
+    required this.name,
+    required this.username,
+    this.bio,
+    required this.foodPreference,
+    required this.forumPosts,
+  });
 
-    Map<String, dynamic> toJson() => {
-        "userID": userId,
-        "username": username,
-        "bio": bio,
-        "food_preferences": List<dynamic>.from(foodPreferences.map((x) => x)),
-        "forum_posts": List<dynamic>.from(forumPosts.map((x) => x.toJson())),
+  factory AboutMeModels.fromJson(Map<String, dynamic> json) {
+    var postsJson = json['forum_posts'] as List<dynamic>;
+    List<ForumPost> forumPostsList = postsJson
+        .map((postJson) => ForumPost.fromJson(postJson as Map<String, dynamic>))
+        .toList();
+    try {
+      return AboutMeModels(
+        userID: json['userID'] ?? 0, // Default value jika null
+        name: json['name'] ?? '',
+        username: json['username'] ?? '', // Default value jika null
+        bio: json['bio'],
+        foodPreference: json['food_preference'] ?? '',
+        forumPosts: forumPostsList,
+      );
+    } catch (e) {
+      print('Error parsing JSON: $e');
+      print('Problematic JSON: $json');
+      rethrow;
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userID': userID,
+      'name' : name,
+      'username': username,
+      'bio': bio,
+      'food_preference': foodPreference,
+      'forum_posts': forumPosts,
     };
+  }
 }
 
 class ForumPost {
-    int postId;
-    String threadTitle;
-    String content;
-    DateTime createdAt;
-    DateTime updatedAt;
+  final int postId;
+  final String threadTitle;
+  final String content;
+  final DateTime createdAt;
 
-    ForumPost({
-        required this.postId,
-        required this.threadTitle,
-        required this.content,
-        required this.createdAt,
-        required this.updatedAt,
-    });
+  ForumPost({
+    required this.postId,
+    required this.threadTitle,
+    required this.content,
+    required this.createdAt,
+  });
 
-    factory ForumPost.fromJson(Map<String, dynamic> json) => ForumPost(
-        postId: json["post_id"],
-        threadTitle: json["thread_title"],
-        content: json["content"],
-        createdAt: DateTime.parse(json["created_at"]),
-        updatedAt: DateTime.parse(json["updated_at"]),
+  factory ForumPost.fromJson(Map<String, dynamic> json) {
+    return ForumPost(
+      postId: json['post_id'],
+      threadTitle: json['thread_title'],
+      content: json['content'],
+      createdAt: DateTime.parse(json['created_at']),
     );
+  }
 
-    Map<String, dynamic> toJson() => {
-        "post_id": postId,
-        "thread_title": threadTitle,
-        "content": content,
-        "created_at": createdAt.toIso8601String(),
-        "updated_at": updatedAt.toIso8601String(),
-    };
+  // Optionally, add a toJson method if needed
+  Map<String, dynamic> toJson() => {
+        'post_id': postId,
+        'thread_title': threadTitle,
+        'content': content,
+        'created_at': createdAt.toIso8601String(),
+      };
 }
