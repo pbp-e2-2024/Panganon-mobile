@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:panganon_mobile/screens/event/event_list.dart';
 import 'dart:convert';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +39,10 @@ class _EventFormPageState extends State<EventFormPage> {
   Future<void> fetchEventData(int eventId) async {
     setState(() => isLoading = true);
     final url = Uri.parse('http://127.0.0.1:8000/event/$eventId/');
-    final response = await http.get(url);
+    final response = await http.get(
+      url,
+      headers: {'X-Requested-With': 'XMLHttpRequest'},
+    );
 
     if (response.statusCode == 200) {
       final event = json.decode(response.body);
@@ -74,11 +78,11 @@ class _EventFormPageState extends State<EventFormPage> {
       final request = context.read<CookieRequest>();
 
       final url = widget.eventId != null
-          ? 'http://127.0.0.1:8000/event/update_flutter/${widget.eventId}/'
-          : 'http://127.0.0.1:8000/event/create_flutter/';
+          ? 'http://127.0.0.1:8000/event/${widget.eventId}/edit-flutter/'
+          : 'http://127.0.0.1:8000/event/create-flutter/';
 
       // Perform the POST request using the CookieRequest instance
-      final response = await request.post(
+      final data = await request.post(
         url,
         jsonEncode({
           'name': _nameController.text,
@@ -88,13 +92,12 @@ class _EventFormPageState extends State<EventFormPage> {
         }),
       );
 
-      final data = json.decode(response.body);
-
-      if (response.statusCode == 200 && data['status'] == 'success') {
+      if (data['success']) {
         setState(() => isLoading = false);
 
         // Navigasi ke event_list.dart
-        Navigator.pushReplacementNamed(context, '/event_list');
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => EventListPage()));
       } else {
         setState(() {
           isLoading = false;
@@ -104,14 +107,14 @@ class _EventFormPageState extends State<EventFormPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('$formTitle Event'),
         backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white), // Back button color
+        iconTheme: const IconThemeData(color: Colors.white),
+        // Back button color
         titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20),
       ),
       body: Stack(
@@ -131,8 +134,9 @@ class _EventFormPageState extends State<EventFormPage> {
                           label: 'Nama Acara',
                           icon: Icons.event,
                           errorText: errors['name'],
-                          validator: (value) =>
-                              value == null || value.isEmpty ? 'Nama Acara harus diisi' : null,
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Nama Acara harus diisi'
+                              : null,
                         ),
                         const SizedBox(height: 16),
                         buildInputField(
@@ -141,8 +145,9 @@ class _EventFormPageState extends State<EventFormPage> {
                           icon: Icons.description,
                           errorText: errors['description'],
                           isMultiline: true,
-                          validator: (value) =>
-                              value == null || value.isEmpty ? 'Keterangan harus diisi' : null,
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Keterangan harus diisi'
+                              : null,
                         ),
                         const SizedBox(height: 16),
                         buildInputField(
@@ -150,8 +155,9 @@ class _EventFormPageState extends State<EventFormPage> {
                           label: 'Lokasi Acara',
                           icon: Icons.location_on,
                           errorText: errors['location'],
-                          validator: (value) =>
-                              value == null || value.isEmpty ? 'Lokasi Acara harus diisi' : null,
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Lokasi Acara harus diisi'
+                              : null,
                         ),
                         const SizedBox(height: 16),
                         buildInputField(

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:panganon_mobile/screens/event/event_form.dart';
+import 'package:panganon_mobile/screens/event/event_list.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class EventDetailPage extends StatefulWidget {
   final int eventId;
@@ -23,7 +27,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
   Future<void> fetchEventDetails() async {
     final url = Uri.parse('http://127.0.0.1:8000/event/${widget.eventId}');
-    final response = await http.get(url);
+    final response =
+        await http.get(url, headers: {'X-Requested-With': 'XMLHttpRequest'});
 
     if (response.statusCode == 200) {
       setState(() {
@@ -31,45 +36,58 @@ class _EventDetailPageState extends State<EventDetailPage> {
         isLoading = false;
       });
     } else {
-      // Handle error if event not found
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Error'),
-          content: Text('Failed to load event details.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('OK'),
-            ),
-          ],
-        ),
-      );
+      _showErrorDialog('Failed to load event details.');
     }
   }
 
   Future<void> deleteEvent() async {
-    final url = Uri.parse('http://127.0.0.1:8000/event/delete/${widget.eventId}');
-    final response = await http.delete(url);
+    final request = context.read<CookieRequest>();
+    final url =
+        'http://127.0.0.1:8000/event/${widget.eventId}/delete-flutter/';
+    final response = await request.post(url, '');
 
-    if (response.statusCode == 200) {
-      Navigator.pop(context);
+    if (response['success']) {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => EventListPage()));
     } else {
-      // Handle delete error
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Error'),
-          content: Text('Failed to delete event.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('OK'),
-            ),
-          ],
-        ),
-      );
+      _showErrorDialog('Failed to delete event.');
     }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> _showConfirmDialog() {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Event'),
+        content: Text('Are you sure you want to delete this event?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -84,34 +102,42 @@ class _EventDetailPageState extends State<EventDetailPage> {
               padding: const EdgeInsets.all(16.0),
               child: SingleChildScrollView(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Card(
-                      elevation: 5,
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(20.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Nama Acara: ${event['name']}',
+                              event['name'] ?? 'N/A',
                               style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             SizedBox(height: 10),
-                            Text(
-                              'Keterangan: ${event['description']}',
-                              style: TextStyle(fontSize: 16),
-                            ),
+                            Divider(),
                             SizedBox(height: 10),
-                            Text(
-                              'Lokasi: ${event['location']}',
-                              style: TextStyle(fontSize: 16),
-                            ),
+                            _buildDetailRow(
+                                icon: Icons.description,
+                                label: 'Description',
+                                value: event['description'] ?? 'N/A'),
                             SizedBox(height: 10),
-                            Text(
-                              'Tanggal: ${event['date']}',
-                              style: TextStyle(fontSize: 16),
-                            ),
+                            _buildDetailRow(
+                                icon: Icons.location_pin,
+                                label: 'Location',
+                                value: event['location'] ?? 'N/A'),
+                            SizedBox(height: 10),
+                            _buildDetailRow(
+                                icon: Icons.calendar_today,
+                                label: 'Date',
+                                value: event['date'] ?? 'N/A'),
                           ],
                         ),
                       ),
@@ -120,58 +146,82 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        ElevatedButton(
+                        ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.pop(context);
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => EventListPage()));
                           },
-                          child: Text('Back to Events'),
+                          icon: Icon(Icons.arrow_back),
+                          label: Text('Back'),
                         ),
-                        if (event['created_by'] == 'current_user_id') // Ensure this is checking if the current user is the event creator
-                          Row(
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pushNamed(
-                                      context, '/event_edit', arguments: event['id']);
-                                },
-                                child: Text('Edit'),
-                              ),
-                              SizedBox(width: 10),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  bool? confirmDelete = await showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: Text('Delete Event'),
-                                      content: Text('Are you sure you want to delete this event?'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context, false),
-                                          child: Text('Cancel'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context, true),
-                                          child: Text('Delete'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-
-                                  if (confirmDelete == true) {
-                                    await deleteEvent();
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                child: Text('Delete'),
-                              ),
-                            ],
-                          ),
+                        Row(
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => EventFormPage(
+                                            eventId: widget.eventId,
+                                          )),
+                                );
+                              },
+                              icon: Icon(Icons.edit),
+                              label: Text('Edit'),
+                            ),
+                            SizedBox(width: 10),
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                bool? confirmDelete =
+                                    await _showConfirmDialog();
+                                if (confirmDelete == true) {
+                                  await deleteEvent();
+                                }
+                              },
+                              icon: Icon(Icons.delete),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red),
+                              label: Text('Delete'),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
             ),
+    );
+  }
+
+  Widget _buildDetailRow(
+      {required IconData icon, required String label, required String value}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 24, color: Theme.of(context).primaryColor),
+        SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+              Text(
+                value,
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

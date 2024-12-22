@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:panganon_mobile/screens/event/event_form.dart';
-import 'package:panganon_mobile/screens/event/event_detail.dart'; // Pastikan path ini sesuai dengan struktur folder Anda
-
+import 'package:panganon_mobile/screens/event/event_detail.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class EventListPage extends StatefulWidget {
   @override
@@ -11,7 +12,7 @@ class EventListPage extends StatefulWidget {
 }
 
 class _EventListPageState extends State<EventListPage> {
-  List events = []; // Untuk menyimpan daftar event
+  List? events;
 
   @override
   void initState() {
@@ -19,14 +20,14 @@ class _EventListPageState extends State<EventListPage> {
     fetchEvents();
   }
 
-  // Fungsi untuk mengambil data event dari backend Django
   Future<void> fetchEvents() async {
-    final url = Uri.parse('http://127.0.0.1:8000/event/'); // Endpoint API Django
+    final url = Uri.parse('http://127.0.0.1:8000/event/');
     try {
-      final response = await http.get(url, headers: {'X-Requested-With': 'XMLHttpRequest'});
+      final response =
+      await http.get(url, headers: {'X-Requested-With': 'XMLHttpRequest'});
       if (response.statusCode == 200) {
         setState(() {
-          events = json.decode(response.body); // Konversi JSON ke List
+          events = json.decode(response.body);
         });
       } else {
         throw Exception('Gagal memuat data event');
@@ -37,122 +38,107 @@ class _EventListPageState extends State<EventListPage> {
   }
 
   Future<void> deleteEvent(int eventId) async {
-    final url = Uri.parse('http://127.0.0.1:8000/event/delete_event_flutter/');
     try {
-      final response = await http.post(
-        url,
-        headers: {'X-Requested-With': 'XMLHttpRequest'},
-        body: {'event_id': eventId.toString()},
-      );
-      if (response.statusCode == 201) {
+      final request = context.read<CookieRequest>();
+      final url =
+          'http://127.0.0.1:8000/event/$eventId/delete-flutter/';
+      final response = await request.post(url, '');
+      if (response['success']) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Event deleted successfully!')),
+          SnackBar(content: Text('Event berhasil dihapus!')),
         );
         fetchEvents();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete event')),
+          SnackBar(content: Text('Gagal menghapus event')),
         );
       }
     } catch (e) {
       print(e);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred')),
+        SnackBar(content: Text('Terjadi kesalahan')),
       );
     }
   }
 
-  
-
-  // Widget untuk menampilkan daftar event
   Widget buildEventItem(event) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Profil pengguna
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              CircleAvatar(
-                backgroundColor: Colors.black,
-                radius: 32,
-              ),
-              CircleAvatar(
-                backgroundImage: event['created_by_image'] != null
-                    ? NetworkImage(event['created_by_image'])
-                    : AssetImage('assets/images/default-profile.jpg') as ImageProvider,
-                radius: 28,
-              ),
-            ],
-          ),
-          SizedBox(width: 12),
-          // Detail event
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                // Navigasi ke halaman detail event
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EventDetailPage(eventId: event['id']),
-                  ),
-                );
-              },
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => EventDetailPage(eventId: event['id'])),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+        padding: EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                CircleAvatar(
+                  backgroundColor: Colors.grey,
+                  radius: 32,
+                ),
+                CircleAvatar(
+                  backgroundImage: event['created_by']['image'] != null
+                      ? MemoryImage(base64Decode(event['created_by']['image']))
+                      : AssetImage('assets/images/default-profile.jpg')
+                  as ImageProvider,
+                  radius: 28,
+                ),
+              ],
+            ),
+            SizedBox(width: 12),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Nama event
-                  Container(
-                    padding: EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[600],
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      event['name'],
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          event['name'],
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
+                      IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => deleteEvent(event['id']),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 6),
-                  // Deskripsi event
-                  Container(
-                    padding: EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      event['description'],
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.grey[800]),
-                    ),
+                  Text(
+                    event['description'],
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey[700]),
                   ),
                   SizedBox(height: 6),
-                  // Info pembuat dan tanggal
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Created by: ${event['created_by'] ?? 'Unknown'}",
+                        "Dibuat oleh: ${event['created_by']['username'] ?? 'Unknown'}",
                         style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       ),
                       Text(
@@ -164,8 +150,8 @@ class _EventListPageState extends State<EventListPage> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -179,7 +165,6 @@ class _EventListPageState extends State<EventListPage> {
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () {
-              // Navigasi ke form tambah event
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => EventFormPage()),
@@ -191,7 +176,6 @@ class _EventListPageState extends State<EventListPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header informasi
             Container(
               margin: EdgeInsets.all(16),
               padding: EdgeInsets.all(16),
@@ -210,7 +194,7 @@ class _EventListPageState extends State<EventListPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    'Informasi Festival Makanan',
+                    'Festival Makanan',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -219,45 +203,55 @@ class _EventListPageState extends State<EventListPage> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Berikut ini adalah informasi terkait Festival Makanan.',
+                    'Informasi terkait Festival Makanan terbaru.',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                   SizedBox(height: 12),
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => EventFormPage()),
+                        MaterialPageRoute(
+                            builder: (context) => EventFormPage()),
                       );
                     },
+                    icon: Icon(Icons.add),
+                    label: Text('Buat Event Baru'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding:
+                      EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text('Create New Event'),
                   ),
                 ],
               ),
             ),
-            // Daftar event
-            events.isEmpty
+            events == null
                 ? Center(child: CircularProgressIndicator())
+                : events!.isEmpty
+                ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Tidak ada event saat ini.',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ),
+            )
                 : ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: events.length,
-                    itemBuilder: (context, index) => buildEventItem(events[index]),
-                  ),
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: events!.length,
+              itemBuilder: (context, index) =>
+                  buildEventItem(events![index]),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
-
-
