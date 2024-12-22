@@ -243,7 +243,7 @@ class _AboutMePageState extends State<AboutMePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('About Me'),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

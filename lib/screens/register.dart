@@ -48,7 +48,7 @@ class _RegisterPageState extends State<RegisterPage> {
             Navigator.pop(context);
           },
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.white,
       ),
       body: Center(
         child: SingleChildScrollView(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:panganon_mobile/screens/about_me/aboutme_page.dart';
 import 'package:panganon_mobile/screens/daftar_makanan/daftar_makanan.dart';
 import 'package:panganon_mobile/widgets/leftdrawer.dart';
 import 'package:panganon_mobile/screens/forum/home_forum.dart';
@@ -67,8 +68,12 @@ class _MenuPageState extends State<MenuPage> {
                   Expanded(
                     child: ItemCard(
                       items[0],
-                      onClick: () =>
-                          showSnackBar(context, "I clicked the ${items[0].title} button!"),
+                      onClick: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AboutMePage(username: widget.username),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),

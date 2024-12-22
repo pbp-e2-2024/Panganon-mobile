@@ -100,10 +100,7 @@ class _DaftarMakananPageState extends State<DaftarMakananPage> {
     
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:8000/daftar_toko/json/'),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        Uri.parse('https://brian-altan-panganon.pbp.cs.ui.ac.id/daftar_toko/json/'),
       );
 
       if (response.statusCode == 200) {
@@ -312,8 +309,8 @@ class _DaftarMakananPageState extends State<DaftarMakananPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Daftar Toko'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         actions: [
           TextButton.icon(
             icon: const Icon(Icons.filter_list),

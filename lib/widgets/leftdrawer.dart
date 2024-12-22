@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:panganon_mobile/screens/about_me/aboutme_page.dart';
 import 'package:panganon_mobile/screens/daftar_makanan/daftar_makanan.dart';
 import 'package:panganon_mobile/screens/login.dart';
+import 'package:panganon_mobile/screens/forum/home_forum.dart'; // Change this import
 import 'dart:convert';
 
 class LeftDrawer extends StatelessWidget {
@@ -48,7 +49,7 @@ class LeftDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Colors.black87, // Background drawer lebih gelap
+      backgroundColor: Colors.white, // Change from Colors.black87 to Colors.white
       child: ListView(
         padding: EdgeInsets.zero, // Menghilangkan padding default
         children: <Widget>[
@@ -56,24 +57,24 @@ class LeftDrawer extends StatelessWidget {
           UserAccountsDrawerHeader(
             accountName: Text(
               username,
-              style: const TextStyle(color: Colors.white), // Menampilkan nama pengguna
+              style: const TextStyle(color: Colors.black), // Change text color to black
             ),
             accountEmail: const Text(
               'user@example.com',
-              style: TextStyle(color: Colors.white70), // Menampilkan email pengguna (dummy)
+              style: TextStyle(color: Colors.black54), // Change text color to dark grey
             ),
             currentAccountPicture: CircleAvatar(
               backgroundImage: NetworkImage(profileImageUrl), // Gambar profil pengguna
               backgroundColor: Colors.grey[800], // Warna latar belakang gambar profil
             ),
             decoration: const BoxDecoration(
-              color: Colors.black87, // Menyesuaikan dengan tema gelap
+              color: Colors.white, // Change from Colors.black87 to Colors.white
             ),
           ),
           // Menu-item lainnya
           ListTile(
-            leading: const Icon(Icons.info, color: Colors.white),
-            title: const Text('About Me', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.info, color: Colors.black), // Change from white to black
+            title: const Text('About Me', style: TextStyle(color: Colors.black)), // Change from white to black
             onTap: () {
               Navigator.push(
                 context,
@@ -84,8 +85,8 @@ class LeftDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.fastfood, color: Colors.white),
-            title: const Text('Daftar Makanan', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.fastfood, color: Colors.black), // Change from white to black
+            title: const Text('Daftar Makanan', style: TextStyle(color: Colors.black)), // Change from white to black
             onTap: () {
               // Aksi untuk membuka halaman Daftar Makanan
               Navigator.push(
@@ -97,33 +98,44 @@ class LeftDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.favorite, color: Colors.white),
-            title: const Text('Favourite', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.favorite, color: Colors.black),
+            title: const Text('Favourite', style: TextStyle(color: Colors.black)),
             onTap: () {
-              // Aksi untuk membuka halaman Favourite
-              Navigator.pushNamed(context, '/favourite');
+              // TODO: Replace with actual navigation when page is ready
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Feature coming soon!")),
+              );
             },
           ),
           ListTile(
-            leading: const Icon(Icons.forum, color: Colors.white),
-            title: const Text('Forum', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.forum, color: Colors.black),
+            title: const Text('Forum', style: TextStyle(color: Colors.black)),
             onTap: () {
-              // Aksi untuk membuka halaman Forum
-              Navigator.pushNamed(context, '/forum');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ForumPage(
+                    username: username,
+                    profileImageUrl: profileImageUrl,
+                  ),
+                ),
+              );
             },
           ),
           ListTile(
-            leading: const Icon(Icons.event, color: Colors.white),
-            title: const Text('Event', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.event, color: Colors.black),
+            title: const Text('Event', style: TextStyle(color: Colors.black)),
             onTap: () {
-              // Aksi untuk membuka halaman Event
-              Navigator.pushNamed(context, '/event');
+              // TODO: Replace with actual navigation when page is ready
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Feature coming soon!")),
+              );
             },
           ),
-          const Divider(color: Colors.white), // Garis pemisah berwarna putih
+          const Divider(color: Colors.black), // Change from white to black
           ListTile(
-            leading: const Icon(Icons.exit_to_app, color: Colors.white),
-            title: const Text('Logout', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.exit_to_app, color: Colors.black), // Change from white to black
+            title: const Text('Logout', style: TextStyle(color: Colors.black)), // Change from white to black
             onTap: () {
               _logout(context); // Panggil fungsi logout saat item ini dipilih
             },
