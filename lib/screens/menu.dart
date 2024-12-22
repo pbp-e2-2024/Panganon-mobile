@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:panganon_mobile/screens/about_me/aboutme_page.dart';
 import 'package:panganon_mobile/screens/daftar_makanan/daftar_makanan.dart';
 import 'package:panganon_mobile/screens/event/event_list.dart';
+import 'package:panganon_mobile/screens/favorites/favorites_page.dart';
 import 'package:panganon_mobile/widgets/leftdrawer.dart';
 import 'package:panganon_mobile/screens/forum/home_forum.dart';
 
@@ -115,12 +116,12 @@ class _MenuPageState extends State<MenuPage> {
                   Expanded(
                     child: ItemCard(
                       items[3],
-                      // onClick: () => Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (context) => const FavouritePage(),
-                      //   ),
-                      // ),
+                      onClick: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FavoriteRestaurantsScreen(),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
