@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:panganon_mobile/screens/about_me/aboutme_page.dart';
 import 'package:panganon_mobile/widgets/leftdrawer.dart';
 import 'package:panganon_mobile/screens/forum/home_forum.dart';  
 
@@ -40,10 +41,7 @@ class _MenuPageState extends State<MenuPage> {
       appBar: AppBar(
         title: const Text('Menu'),
       ),
-      drawer: LeftDrawer(
-        username: widget.username,
-        profileImageUrl: widget.profileImageUrl,
-      ),
+      drawer: LeftDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -65,11 +63,16 @@ class _MenuPageState extends State<MenuPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: ItemCard(
-                      items[0],
-                      onClick: () => showSnackBar(context, "I clicked the ${items[0].title} button!"),
+                      child: ItemCard(
+                        items[0],
+                        onClick: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => AboutMePage()),
+                          );
+                        },
+                      ),
                     ),
-                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: ItemCard(

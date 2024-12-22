@@ -18,8 +18,8 @@ class ForumPage extends StatelessWidget {
         title: const Text('Forum'),
       ),
       drawer: LeftDrawer(
-        username: username,
-        profileImageUrl: profileImageUrl,
+        // username: username,
+        // profileImageUrl: profileImageUrl,
       ),
       body: const Center(
         child: Text('Forum Page'),
