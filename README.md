@@ -1,3 +1,5 @@
+[![Build status](https://build.appcenter.ms/v0.1/apps/0bdbe400-9a63-42bd-968e-c873882872fc/branches/main/badge)](https://appcenter.ms)
+
 # Panganon Mobile
 
 ## **1. Nama-nama anggota kelompok**

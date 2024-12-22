@@ -164,7 +164,10 @@ class _EventListPageState extends State<EventListPage> {
         title: Text('Daftar Event'),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(
+            Icons.add,
+            color: Colors.white, // Option 1: Direct color
+          ),
             onPressed: () {
               Navigator.push(
                 context,
@@ -218,9 +221,14 @@ class _EventListPageState extends State<EventListPage> {
                       );
                     },
                     icon: Icon(Icons.add),
-                    label: Text('Buat Event Baru'),
+                    label: Text(
+                    'Buat Event Baru',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: Colors.black,
                       padding:
                       EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       shape: RoundedRectangleBorder(
