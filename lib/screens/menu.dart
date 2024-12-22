@@ -21,7 +21,7 @@ class _MenuPageState extends State<MenuPage> {
     ItemHomepage("About Me", Icons.info),
     ItemHomepage("Daftar Makanan", Icons.fastfood),
     ItemHomepage("Forum", Icons.forum),
-    ItemHomepage("Favourite", Icons.favorite),
+    ItemHomepage("Favorite", Icons.favorite),
     ItemHomepage("Event", Icons.event),
   ];
 
