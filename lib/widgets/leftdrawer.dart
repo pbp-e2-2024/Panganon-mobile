@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:panganon_mobile/screens/about_me/aboutme_page.dart';
 import 'package:panganon_mobile/screens/daftar_makanan/daftar_makanan.dart';
 import 'package:panganon_mobile/screens/event/event_list.dart';
+import 'package:panganon_mobile/screens/favorites/favorites_page.dart';
 import 'package:panganon_mobile/screens/login.dart';
 import 'package:panganon_mobile/screens/forum/home_forum.dart'; // Change this import
 import 'dart:convert';
@@ -102,9 +103,11 @@ class LeftDrawer extends StatelessWidget {
             leading: const Icon(Icons.favorite, color: Colors.black),
             title: const Text('Favourite', style: TextStyle(color: Colors.black)),
             onTap: () {
-              // TODO: Replace with actual navigation when page is ready
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Feature coming soon!")),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FavoriteRestaurantsScreen()
+                ),
               );
             },
           ),
