@@ -1,7 +1,12 @@
 [![Build status](https://build.appcenter.ms/v0.1/apps/0bdbe400-9a63-42bd-968e-c873882872fc/branches/main/badge)](https://appcenter.ms)
 
+
 # Panganon Mobile
 
+Tautan Aplikasi: https://install.appcenter.ms/orgs/panganon-mobile-e02/apps/panganon/distribution_groups/public
+Notes: Last Commit: Change UI aa6244ce7b0052c667c24f6433ea11823c52e005
+
+ 
 ## **1. Nama-nama anggota kelompok**
 - Brian Altan (2306152166)
 - Muhammad Ruzbehan Baqli (2306245062)
