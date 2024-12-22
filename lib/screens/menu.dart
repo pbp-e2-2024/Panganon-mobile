@@ -3,6 +3,7 @@ import 'package:panganon_mobile/screens/about_me/aboutme_page.dart';
 import 'package:panganon_mobile/screens/daftar_makanan/daftar_makanan.dart';
 import 'package:panganon_mobile/widgets/leftdrawer.dart';
 import 'package:panganon_mobile/screens/forum/home_forum.dart';
+import 'package:panganon_mobile/screens/event/event_list.dart'; // Tambahkan import ini
 
 class MenuPage extends StatefulWidget {
   final String username;
@@ -122,8 +123,7 @@ class _MenuPageState extends State<MenuPage> {
                   Expanded(
                     child: ItemCard(
                       items[4],
-                      onClick: () =>
-                          showSnackBar(context, "I clicked the ${items[4].title} button!"),
+                      onClick: () => showSnackBar(context, "I clicked the ${items[4].title} button!"),
                     ),
                   ),
                 ],
